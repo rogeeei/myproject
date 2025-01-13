@@ -31,4 +31,19 @@ class ProductTypeController extends Controller
     ], 201);
 }
 
+public function showBySubcategory($parentTypeId)
+    {
+        // Fetch products that belong to the given store ID
+        $product_type = ProductType::where('parent_type_id', $parentTypeId)->get();
+
+        // Check if products exist for the store
+        if ($product_type->isEmpty()) {
+            return response()->json([
+                'message' => 'No subcategory found for this store.'
+            ], 404);
+        }
+
+        return response()->json($product_type);
+    }
+
 }

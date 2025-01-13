@@ -42,4 +42,13 @@ class Products extends Model
     {
         return $this->belongsTo(Vendor::class, 'vendor_id', 'vendor_id');
     }
+    public function inventory()
+    {
+        return $this->hasMany(Inventory::class, 'product_id');
+    }
+    public function orders()
+{
+    return $this->hasMany(Orders::class, 'product_id', 'product_id');
+}
+
 }

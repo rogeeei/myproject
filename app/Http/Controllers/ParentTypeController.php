@@ -49,4 +49,16 @@ class ParentTypeController extends Controller
         return response()->json($parent_type);
     }
 
+     /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        $parent_type = ParentType::findOrFail($id);
+ 
+        $parent_type->delete();
+
+        return $parent_type;
+    }
+
 }

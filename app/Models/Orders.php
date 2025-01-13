@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\OrderItem;
 
 class Orders extends Model
 {
@@ -18,6 +19,8 @@ class Orders extends Model
         'store_id',
         'brand_id',
         'cashier_id',
+        'product_id',
+        'quantity',
     ];
 
     // Define relationships
@@ -44,5 +47,9 @@ class Orders extends Model
     public function cashier()
     {
         return $this->belongsTo(Cashier::class, 'cashier_id', 'cashier_id');
+    }
+     public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

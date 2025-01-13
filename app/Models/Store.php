@@ -19,10 +19,10 @@ class Store extends Model
 ];
 
 
-    // public function products()
-    // {
-    //     return $this->hasMany(Product::class, 'store_id', 'store_id');
-    // }
+    public function products()
+    {
+        return $this->hasMany(Products::class, 'store_id', 'store_id');
+    }
 
     // public function orders()
     // {

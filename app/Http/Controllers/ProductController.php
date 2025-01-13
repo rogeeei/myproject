@@ -18,66 +18,125 @@ class ProductController extends Controller
         return response()->json($products, 200);
     }
 
-     public function showByStore($storeId)
-    {
-        // Fetch products that belong to the given store ID
-        $products = Products::where('store_id', $storeId)->get();
+   public function showBySubcategory($productTypeId)
+{
+    // Fetch products that belong to the given product type ID and include specific fields
+    $products = Products::where('product_type_id', $productTypeId)->get([
+        'product_id',
+        'upc',
+        'product_name',
+        'price',
+        'quantity',
+    ]);
 
-        // Check if products exist for the store
-        if ($products->isEmpty()) {
-            return response()->json([
-                'message' => 'No products found for this store.'
-            ], 404);
-        }
-
-        return response()->json($products);
+    // Check if products exist for the product type
+    if ($products->isEmpty()) {
+        return response()->json([
+            'message' => 'No products found for this subcategory.'
+        ], 404);
     }
+
+    return response()->json($products);
+}
+
 
     /**
      * Store a newly created product in storage.
      */
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'UPC'              => 'required|string|unique:products,UPC',
-            'product_name'     => 'required|string|max:255',
-            'size'             => 'required|string|max:255',
-            'packaging'        => 'required|string|max:255',
-            'brand_id'         => 'required|exists:brand,brand_id',
-            'product_type_id'  => 'required|exists:product_type,product_type_id',
-            'vendor_id'        => 'required|exists:vendor,vendor_id',
-            'image'            => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'quantity'         => 'required|integer',
-            'price'         => 'required|numeric',
-            'store_id' => 'required|exists:store,store_id',
-        ]);
+{
+    // Validate the incoming request
+    $validated = $request->validate([
+        'UPC'              => 'required|string|unique:products,UPC',
+        'product_name'     => 'required|string|max:255',
+        'size'             => 'required|string|max:255',
+        'packaging'        => 'required|string|max:255',
+        'brand_id'         => 'nullable|exists:brand,brand_id', // This can be null
+        'product_type_id'  => 'required|exists:product_type,product_type_id',
+        'vendor_id'        => 'nullable|exists:vendor,vendor_id', // This can be null
+        'image'            => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'quantity'         => 'required|integer',
+        'price'            => 'required|numeric',
+        'store_id'         => 'required|exists:store,store_id',
+    ]);
 
-        // Handle the image upload if provided
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-        }
+    // Set brand_id and vendor_id to null if not provided
+    $brandId = $validated['brand_id'] ?? null;
+    $vendorId = $validated['vendor_id'] ?? null;
 
-        // Create the product
-        $product = Products::create([
-            'UPC'             => $validated['UPC'],
-            'product_name'    => $validated['product_name'],
-            'size'            => $validated['size'],
-            'packaging'       => $validated['packaging'],
-            'brand_id'        => $validated['brand_id'],
-            'product_type_id' => $validated['product_type_id'],
-            'vendor_id'       => $validated['vendor_id'],
-            'image_path'      => $imagePath,
-            'quantity'       => $validated['quantity'],
-             'price'       => $validated['price'],
-             'store_id' => $validated['store_id'],
-        ]);
-
-        return response()->json([
-            'message' => 'Product created successfully',
-            'product' => $product,
-        ], 201);
+    // Handle the image upload if provided
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('products', 'public');
     }
+
+    // Create the product
+    $product = Products::create([
+        'UPC'             => $validated['UPC'],
+        'product_name'    => $validated['product_name'],
+        'size'            => $validated['size'],
+        'packaging'       => $validated['packaging'],
+        'brand_id'        => $brandId, // Automatically set to null if not provided
+        'product_type_id' => $validated['product_type_id'],
+        'vendor_id'       => $vendorId, // Automatically set to null if not provided
+        'image_path'      => $imagePath,
+        'quantity'        => $validated['quantity'],
+        'price'           => $validated['price'],
+        'store_id'        => $validated['store_id'],
+    ]);
+
+    return response()->json([
+        'message' => 'Product created successfully',
+        'product' => $product,
+    ], 201);
+}
+
+
+    public function showProductsByStoreAndType($storeId, $productTypeId)
+{
+    // Fetch products based on store_id and product_type_id
+    $products = Products::where('store_id', $storeId)
+                        ->where('product_type_id', $productTypeId)
+                        ->get([
+                            'product_id',
+                            'UPC',
+                            'product_name',
+                            'price',
+                            'quantity',
+                        ]);
+
+    // Check if products exist
+    if ($products->isEmpty()) {
+        return response()->json([
+            'message' => 'No products found for this store and product type.'
+        ], 404);
+    }
+
+    return response()->json($products, 200);
+}
+public function showProductsByStore($storeId)
+{
+    // Fetch products based on store_id
+    $products = Products::where('store_id', $storeId)
+                        ->get([
+                            'product_id',
+                            'UPC',
+                            'product_name',
+                            'price',
+                            'quantity',
+                        ]);
+
+    // Check if products exist
+    if ($products->isEmpty()) {
+        return response()->json([
+            'message' => 'No products found for this store.'
+        ], 404);
+    }
+
+    return response()->json($products, 200);
+}
+
+
 
     /**
      * Display the specified product.
